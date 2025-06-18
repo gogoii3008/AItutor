@@ -7,15 +7,41 @@
 <body>
   <h1>🚀 Welcome to AItutor!</h1>
   <p>This is your live AI-powered tutor platform. More features coming soon.</p>
-  <button id="micBtn">🎤 Speak</button>
-<input type="text" id="questionInput" placeholder="Ask your question..." />
+  <h2>Ask Your Question</h2>
+
+<select id="language">
+  <option value="Hindi">Hindi</option>
+  <option value="English">English</option>
+  <option value="Assamese">Assamese</option>
+</select>
+
+<br><br>
+
+<input type="text" id="questionInput" placeholder="Ask your question..." size="50" />
+<button id="micBtn">🎤 Speak</button>
+<button id="submitBtn">Submit</button>
+
+<p id="response"></p>
+
 <script>
   const micBtn = document.getElementById('micBtn');
+  const submitBtn = document.getElementById('submitBtn');
   const inputBox = document.getElementById('questionInput');
+  const languageSelect = document.getElementById('language');
+  const responsePara = document.getElementById('response');
 
   micBtn.addEventListener('click', () => {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'hi-IN'; // Use 'en-IN' or 'as-IN' for Assamese, based on needs
+    const selectedLang = languageSelect.value;
+    
+    if (selectedLang === "Assamese") {
+      recognition.lang = 'as-IN';
+    } else if (selectedLang === "English") {
+      recognition.lang = 'en-IN';
+    } else {
+      recognition.lang = 'hi-IN';
+    }
+
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
@@ -30,6 +56,22 @@
       alert("Speech recognition error: " + event.error);
     };
   });
+
+  submitBtn.addEventListener('click', async () => {
+    const question = inputBox.value;
+    const lang = languageSelect.value;
+
+    const response = await fetch("/bot", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ Body: question, Language: lang })
+    });
+
+    const text = await response.text();
+    responsePara.innerText = text;
+  });
 </script>
+
+
 </body>
 </html>
