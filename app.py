@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request,render_template 
 from twilio.twiml.messaging_response import MessagingResponse
 import openai
 import os
@@ -41,8 +41,7 @@ def bot():
 
 @app.route("/")
 def home():
-    return "🚀 AItutor is live and working!"
-
+    return render_template("index.html")
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 10000))  # Render uses environment variable PORT
