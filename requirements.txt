@@ -1,5 +1,3 @@
-Flask
+flask
 openai
-requests
-twilio
-pydub
+ffmpeg-python
