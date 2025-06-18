@@ -6,7 +6,7 @@ services:
     region: oregon
     dockerfilePath: Dockerfile
     envVars:
-      - key: sk-b9959a5c9086432a9a713773f4def111
+      - key: AItutor
         sync: false
       - key: AC533f6ff745da12a3dbe4f1507e953dba
         sync: false
