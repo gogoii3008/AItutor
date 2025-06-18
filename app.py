@@ -40,4 +40,5 @@ def bot():
     return str(twilio_response)
 
 if __name__ == "__main__":
-    app.run()
+    port = int(os.environ.get("PORT", 5000))  # 5000 is fallback
+    app.run(host="0.0.0.0", port=port)
