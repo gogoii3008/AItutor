@@ -5,8 +5,8 @@ from openai import OpenAI
 
 app = Flask(__name__)
 
-# Load your OpenAI key from environment variable
-openai.api_key = os.environ.get("AItutor")
+# Initialize OpenAI client with your API key
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 # Generate prompt based on selected language
 def generate_prompt(user_input, lang="English"):
@@ -45,8 +45,7 @@ def bot():
                     model="whisper-1",
                     file=f
                 )
-                user_text = transcript.text
-                incoming_msg = transcript["text"]
+                incoming_msg = transcript.text
         except Exception as e:
             return f"Whisper error: {str(e)}", 500
         finally:
@@ -59,8 +58,6 @@ def bot():
 
     try:
         prompt = generate_prompt(incoming_msg, lang)
-        
-        client = OpenAI()
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}]
@@ -72,5 +69,5 @@ def bot():
     return answer
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
+    port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
