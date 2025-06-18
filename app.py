@@ -1,7 +1,7 @@
 import os
 import subprocess
 from flask import Flask, request, render_template, jsonify
-import openai
+from openai import OpenAI
 
 app = Flask(__name__)
 
@@ -41,7 +41,11 @@ def bot():
 
         try:
             with open(output_path, "rb") as f:
-                transcript = openai.Audio.transcribe("whisper-1", f)
+                transcript = client.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=f
+                )
+                user_text = transcript.text
                 incoming_msg = transcript["text"]
         except Exception as e:
             return f"Whisper error: {str(e)}", 500
@@ -55,7 +59,9 @@ def bot():
 
     try:
         prompt = generate_prompt(incoming_msg, lang)
-        response = openai.ChatCompletion.create(
+        
+        client = OpenAI()
+        response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}]
         )
