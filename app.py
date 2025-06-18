@@ -39,6 +39,11 @@ def bot():
     twilio_response.message(answer)
     return str(twilio_response)
 
+@app.route("/")
+def home():
+    return "🚀 AItutor is live and working!"
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # default to 5000 if PORT is not set
+    import os
+    port = int(os.environ.get("PORT", 10000))  # Render uses environment variable PORT
     app.run(host="0.0.0.0", port=port)
