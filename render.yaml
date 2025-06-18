@@ -1,14 +1,10 @@
 services:
   - type: web
-    name: aitutor-backend
-    env: python
-    region: oregon
+    name: aitutor-docker
+    env: docker
     plan: free
-    buildCommand: |
-      apt-get update
-      apt-get install -y ffmpeg
-      pip install -r requirements.txt
-    startCommand: python app.py
+    region: oregon
+    dockerfilePath: Dockerfile
     envVars:
       - key: AItutor
         sync: false
