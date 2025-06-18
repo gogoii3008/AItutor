@@ -21,7 +21,7 @@ def generate_prompt(user_input, lang="Hindi"):
 @app.route("/bot", methods=["POST"])
 def bot():
     incoming_msg = request.form.get('Body')
-    lang = "Hindi"  # Default language
+    lang = request.form.get('Language', 'English') 
 
     try:
         response = openai.ChatCompletion.create(
