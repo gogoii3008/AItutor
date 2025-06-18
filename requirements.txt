@@ -1,4 +1,5 @@
 Flask
 openai
+requests
 twilio
 pydub
