@@ -1,9 +1,18 @@
 services:
   - type: web
-    name: AItutor
+    name: aitutor-backend
     env: python
-    buildCommand: ""
-    startCommand: "python app.py"
+    region: oregon
+    plan: free
+    buildCommand: |
+      apt-get update
+      apt-get install -y ffmpeg
+      pip install -r requirements.txt
+    startCommand: python app.py
     envVars:
-      - key: OPENAI_API_KEY
+      - key: AItutor
+        sync: false
+      - key: AC533f6ff745da12a3dbe4f1507e953dba
+        sync: false
+      - key: dcc632033211b514729f9c1657e7a79f
         sync: false
