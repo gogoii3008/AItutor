@@ -3,7 +3,7 @@ services:
     name: AItutor
     env: python
     buildCommand: ""
-    startCommand: "python app.py"
+    startCommand: "python app1.py"
     envVars:
       - key: OPENAI_API_KEY
         sync: false
