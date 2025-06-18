@@ -6,7 +6,7 @@ import openai
 app = Flask(__name__)
 
 # Load your OpenAI key from environment variable
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+openai.api_key = os.environ.get("AItutor")
 
 # Generate prompt based on selected language
 def generate_prompt(user_input, lang="English"):
