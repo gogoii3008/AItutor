@@ -5,7 +5,7 @@ import requests
 
 app = Flask(__name__)
 
-DEEPSEEK_API_KEY = os.environ.get("sk-b9959a5c9086432a9a713773f4def111")
+DEEPSEEK_API_KEY = os.environ.get("AItutor")
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
 # Prompt generation based on language
@@ -54,7 +54,7 @@ def bot():
     try:
         prompt = generate_prompt(incoming_msg, lang)
         headers = {
-            "Authorization": f"Bearer {sk-b9959a5c9086432a9a713773f4def111}",
+            "Authorization": f"Bearer {AItutor}",
             "Content-Type": "application/json"
         }
         data = {
