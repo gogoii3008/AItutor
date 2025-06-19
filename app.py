@@ -1,4 +1,5 @@
-'''import os
+'''
+import os
 import subprocess
 from flask import Flask, request, render_template
 import requests
@@ -6,6 +7,7 @@ import json
 from gtts import gTTS
 
 app = Flask(__name__)
+'''
 '''
 # Get Gemini API key from environment variable
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -83,7 +85,7 @@ def bot():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
-'''
+
 # -------------------------------------
 # 🔧 Step 1: Setup Flask App
 # -------------------------------------
@@ -157,9 +159,9 @@ def ask():
 # 🚀 Step 5: Run the Flask App
 # -------------------------------------
 if __name__ == "__main__":
-    app.run(debug=True)'''
-
-
+    app.run(debug=True)
+'''
+    
 
 
 import os
@@ -184,9 +186,9 @@ if not os.path.exists("static"):
 # 🔑 Step 2: Configure Gemini API
 # -------------------------------------
 # Use env variable or paste your API key directly
-GOOGLE_API_KEY = os.environ.get("GEMINI_API_KEY", "YAIzaSyA5JvmQ1PbN5KGWMsuvpjf759b4GOCWfUI")
-genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-pro")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key={GEMINI_API_KEY}"
+
 
 # -------------------------------------
 # 📄 Step 3: Serve index.html
