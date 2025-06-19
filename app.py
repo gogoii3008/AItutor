@@ -2,6 +2,10 @@ import os
 import subprocess
 from flask import Flask, request, render_template
 import requests
+from vosk import Model, KaldiRecognizer
+import wave
+import json
+
 
 app = Flask(__name__)
 
@@ -20,6 +24,20 @@ def generate_prompt(user_input, lang="English"):
 @app.route("/")
 def index():
     return render_template("index.html")
+def transcribe_audio(path):
+    model = Model("vosk-model")  # This is the folder you downloaded earlier
+    wf = wave.open(path, "rb")
+    rec = KaldiRecognizer(model, wf.getframerate())
+
+    text = ""
+    while True:
+        data = wf.readframes(4000)
+        if len(data) == 0:
+            break
+        if rec.AcceptWaveform(data):
+            result = json.loads(rec.Result())
+            text += result.get("text", "") + " "
+    return text.strip()
 
 @app.route("/bot", methods=["POST"])
 def bot():
@@ -31,22 +49,20 @@ def bot():
     output_path = "output.wav"
 
     if audio_file:
-        audio_file.save(input_path)
-        try:
-            subprocess.run(["ffmpeg", "-y", "-i", input_path, output_path], check=True)
-        except subprocess.CalledProcessError:
-            return "Audio conversion failed", 500
+    audio_file.save(input_path)
+    try:
+        subprocess.run(["ffmpeg", "-y", "-i", input_path, output_path], check=True)
+    except subprocess.CalledProcessError:
+        return "Error: Audio conversion failed", 500
 
-        try:
-            import whisper
-            model = whisper.load_model("base")
-            result = model.transcribe(output_path)
-            incoming_msg = result["text"]
-        except Exception as e:
-            return f"Whisper error: {str(e)}", 500
-        finally:
-            if os.path.exists(input_path): os.remove(input_path)
-            if os.path.exists(output_path): os.remove(output_path)
+    try:
+        incoming_msg = transcribe_audio(output_path)
+    except Exception as e:
+        return f"Transcription error: {str(e)}", 500
+    finally:
+        if os.path.exists(input_path): os.remove(input_path)
+        if os.path.exists(output_path): os.remove(output_path)
+
 
     if not incoming_msg:
         return "No input received", 400
