@@ -3,3 +3,4 @@ requests
 ffmpeg-python
 vosk
 google-generativeai
+gTTS
