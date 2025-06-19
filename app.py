@@ -1,54 +1,64 @@
 import os
 import subprocess
-import wave
-import json
-import requests
 from flask import Flask, request, render_template
-
+import requests
+import json
 from vosk import Model, KaldiRecognizer
+import wave
 
 app = Flask(__name__)
 
-# Load DeepSeek API Key
-DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
-DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
+# Setup Gemini API
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
 
-# Load Vosk model (must be placed in project directory)
+# Load Vosk model (ensure model directory is downloaded and named 'vosk-model')
 VOSK_MODEL_PATH = "vosk-model"
+model = Model(VOSK_MODEL_PATH)
 
-# 🔁 Function to transcribe audio using Vosk
-def transcribe_audio(path):
-    model = Model(VOSK_MODEL_PATH)
-    wf = wave.open(path, "rb")
+# Function to generate custom prompts based on language
+def generate_prompt(user_input, lang="English"):
+    if lang.lower() == "assamese":
+        return f"Explain this concept to a Class 10 Assamese student in Assamese: {user_input}"
+    elif lang.lower() == "hindi":
+        return f"Explain this concept to a Class 10 Hindi-medium student in Hindi: {user_input}"
+    else:
+        return f"Explain this clearly to a Class 10 student: {user_input}"
+
+# Gemini API call function
+def call_gemini(prompt):
+    headers = {
+        "Content-Type": "application/json"
+    }
+    params = {
+        "key": GEMINI_API_KEY
+    }
+    data = {
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+    response = requests.post(GEMINI_API_URL, headers=headers, params=params, json=data)
+    response.raise_for_status()
+    return response.json()["candidates"][0]["content"]["parts"][0]["text"]
+
+# Transcribe voice using Vosk
+def transcribe_audio(wav_path):
+    wf = wave.open(wav_path, "rb")
     rec = KaldiRecognizer(model, wf.getframerate())
-    
-    text = ""
+    rec.SetWords(True)
+    result_text = ""
     while True:
         data = wf.readframes(4000)
         if len(data) == 0:
             break
         if rec.AcceptWaveform(data):
-            result = json.loads(rec.Result())
-            text += result.get("text", "") + " "
-    
-    return text.strip()
+            result_text += json.loads(rec.Result())["text"] + " "
+    result_text += json.loads(rec.FinalResult())["text"]
+    return result_text.strip()
 
-# 🔁 Prompt generation based on language
-def generate_prompt(user_input, lang="English"):
-    lang = lang.lower()
-    if lang == "assamese":
-        return f"Explain this concept to a Class 10 Assamese student in Assamese: {user_input}"
-    elif lang == "hindi":
-        return f"Explain this concept to a Class 10 Hindi-medium student in Hindi: {user_input}"
-    else:
-        return f"Explain this clearly to a Class 10 student: {user_input}"
-
-# 🏠 Home page route
 @app.route("/")
 def index():
     return render_template("index.html")
 
-# 🤖 Bot endpoint
 @app.route("/bot", methods=["POST"])
 def bot():
     lang = request.form.get('Language', 'English')
@@ -58,49 +68,29 @@ def bot():
     input_path = "input.ogg"
     output_path = "output.wav"
 
-    # 🧠 Handle audio input
+    # If voice is used, convert and transcribe
     if audio_file:
         audio_file.save(input_path)
         try:
             subprocess.run(["ffmpeg", "-y", "-i", input_path, output_path], check=True)
-        except subprocess.CalledProcessError:
-            return "Error: Audio conversion failed", 500
-
-        try:
             incoming_msg = transcribe_audio(output_path)
         except Exception as e:
-            return f"Transcription error: {str(e)}", 500
+            return f"Audio conversion/transcription failed: {str(e)}", 500
         finally:
             if os.path.exists(input_path): os.remove(input_path)
             if os.path.exists(output_path): os.remove(output_path)
 
-    # 📭 No input check
     if not incoming_msg:
         return "No message received", 400
 
-    # 💬 Generate response from DeepSeek
     try:
         prompt = generate_prompt(incoming_msg, lang)
-        headers = {
-            "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        data = {
-            "model": "deepseek-chat",
-            "messages": [
-                {"role": "user", "content": prompt}
-            ]
-        }
-        response = requests.post(DEEPSEEK_API_URL, headers=headers, json=data)
-        response.raise_for_status()
-        result = response.json()
-        answer = result['choices'][0]['message']['content'].strip()
+        answer = call_gemini(prompt)
     except Exception as e:
-        return f"DeepSeek error: {str(e)}", 500
+        return f"Gemini error: {str(e)}", 500
 
     return answer
 
-# 🚀 Run the server
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
