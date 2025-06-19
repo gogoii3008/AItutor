@@ -1,13 +1,12 @@
 services:
   - type: web
-    name: aitutor-docker
-    env: docker
-    plan: free
-    region: oregon
-    dockerfilePath: Dockerfile
+    name: aitutor
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
     envVars:
       - key: GEMINI_API_KEY
-        sync: false
+        value: "AIzaSyA5JvmQ1PbN5KGWMsuvpjf759b4GOCWfUI"
       - key: AC533f6ff745da12a3dbe4f1507e953dba
         sync: false
       - key: dcc632033211b514729f9c1657e7a79f
