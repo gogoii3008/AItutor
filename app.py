@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # Get Gemini API key from environment variable
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key={GEMINI_API_KEY}"
+GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key={GEMINI_API_KEY}"
 
 # Optional: Whisper will be replaced later with Vosk or real-time STT
 def transcribe_audio(audio_path):
