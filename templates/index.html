@@ -1,52 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>AI Tutor</title>
 </head>
 <body>
-  <h1>Ask Your AI Tutor</h1>
+  <h2>🎓 Ask Your AI Tutor</h2>
 
-  <form id="ask-form" method="POST">
-    <label>Choose language:
-      <select name="language" id="language">
-        <option value="english">English</option>
-        <option value="hindi">Hindi</option>
-        <option value="assamese">Assamese</option>
-      </select>
-    </label>
-    <br/><br/>
+  <form id="ask-form">
+    <label for="language">Choose language:</label>
+    <select name="language" id="language">
+      <option value="english">English</option>
+      <option value="hindi">Hindi</option>
+      <option value="assamese">Assamese</option>
+    </select><br><br>
 
-    <textarea name="question" id="question" rows="4" cols="50" placeholder="Enter your question here..."></textarea><br/>
+    <label for="question">Your question:</label><br>
+    <textarea id="question" name="question" rows="4" cols="50" placeholder="Ask anything..."></textarea><br><br>
+
     <button type="submit">Ask</button>
+    <button type="button" onclick="startRecording()">🎤 Speak</button>
   </form>
 
-  <div id="response" style="margin-top:20px;"></div>
-  <audio id="audio" controls style="display:none;"></audio>
+  <h3>AI Response:</h3>
+  <div id="response" style="margin-bottom: 1rem;"></div>
+  <audio id="audio" controls style="display: none;"></audio>
 
   <script>
-    const form = document.getElementById('ask-form');
-    form.onsubmit = async (e) => {
+    // Form handling
+    document.getElementById("ask-form").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const formData = new FormData(form);
-      const res = await fetch('/ask', {
-        method: 'POST',
-        body: formData
+      const formData = new FormData(e.target);
+      const res = await fetch("/ask", {
+        method: "POST",
+        body: formData,
       });
-
       const data = await res.json();
-      if (data.answer) {
-        document.getElementById('response').innerText = data.answer;
-        const audio = document.getElementById('audio');
-        audio.src = data.audio;
-        audio.style.display = 'block';
-        audio.play();
-      } else {
-        document.getElementById('response').innerText = data.error || 'An error occurred';
-      }
-    };
+      document.getElementById("response").innerText = data.answer || "No answer.";
+      const audio = document.getElementById("audio");
+      audio.src = data.audio;
+      audio.style.display = "block";
+      audio.play();
+    });
+
+    // Voice input
+    function startRecording() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = "en-IN";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.start();
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("question").value = transcript;
+      };
+
+      recognition.onerror = (event) => {
+        alert("Speech recognition error: " + event.error);
+      };
+    }
   </script>
 </body>
 </html>
-
