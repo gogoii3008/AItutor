@@ -1,64 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Tutor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem auto;
+      max-width: 700px;
+      padding: 20px;
+      background-color: #f7f9fb;
+      color: #222;
+    }
+    h1 {
+      color: #003366;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 1rem;
+    }
+    select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 0.5rem;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      margin-top: 1rem;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #response {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #e6f0ff;
+      border-left: 5px solid #007bff;
+    }
+    #audio {
+      margin-top: 1rem;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
-  <h2>🎓 Ask Your AI Tutor</h2>
+  <h1>🎓 Ask Your AI Tutor</h1>
 
   <form id="ask-form">
-    <label for="language">Choose language:</label>
+    <label for="language">Select Language:</label>
     <select name="language" id="language">
       <option value="english">English</option>
       <option value="hindi">Hindi</option>
       <option value="assamese">Assamese</option>
-    </select><br><br>
+    </select>
 
-    <label for="question">Your question:</label><br>
-    <textarea id="question" name="question" rows="4" cols="50" placeholder="Ask anything..."></textarea><br><br>
+    <label for="question">Your Question:</label>
+    <textarea id="question" name="question" rows="5" placeholder="Type or speak your question..."></textarea>
 
-    <button type="submit">Ask</button>
-    <button type="button" onclick="startRecording()">🎤 Speak</button>
+    <button type="submit">Ask AI Tutor</button>
+    <button type="button" onclick="startRecording()">🎤 Speak Question</button>
   </form>
 
-  <h3>AI Response:</h3>
-  <div id="response" style="margin-bottom: 1rem;"></div>
-  <audio id="audio" controls style="display: none;"></audio>
+  <div id="response" style="display:none;">
+    <h3>Answer:</h3>
+    <div id="answer-text"></div>
+    <audio id="audio" controls style="display:none;"></audio>
+  </div>
 
   <script>
-    // Form handling
-    document.getElementById("ask-form").addEventListener("submit", async (e) => {
+    // Handle form submission
+    document.getElementById("ask-form").addEventListener("submit", async function (e) {
       e.preventDefault();
-      const formData = new FormData(e.target);
-      const res = await fetch("/ask", {
+
+      const formData = new FormData(this);
+      const response = await fetch("/ask", {
         method: "POST",
-        body: formData,
+        body: formData
       });
-      const data = await res.json();
-      document.getElementById("response").innerText = data.answer || "No answer.";
-      const audio = document.getElementById("audio");
-      audio.src = data.audio;
-      audio.style.display = "block";
-      audio.play();
+
+      const result = await response.json();
+      if (result.answer) {
+        document.getElementById("response").style.display = "block";
+        document.getElementById("answer-text").innerText = result.answer;
+        const audio = document.getElementById("audio");
+        audio.src = result.audio;
+        audio.style.display = "block";
+        audio.play();
+      } else {
+        alert(result.error || "Something went wrong.");
+      }
     });
 
-    // Voice input
+    // Voice input using Web Speech API
     function startRecording() {
       const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = "en-IN";
+      recognition.lang = "en-IN"; // You can make this dynamic based on language
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
       recognition.start();
 
-      recognition.onresult = (event) => {
+      recognition.onresult = function (event) {
         const transcript = event.results[0][0].transcript;
         document.getElementById("question").value = transcript;
       };
 
-      recognition.onerror = (event) => {
-        alert("Speech recognition error: " + event.error);
+      recognition.onerror = function (event) {
+        alert("Error: " + event.error);
       };
     }
   </script>
