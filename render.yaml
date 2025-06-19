@@ -6,7 +6,7 @@ services:
     region: oregon
     dockerfilePath: Dockerfile
     envVars:
-      - key: DEEPSEEK_API_KEY
+      - key: GEMINI_API_KEY
         sync: false
       - key: AC533f6ff745da12a3dbe4f1507e953dba
         sync: false
