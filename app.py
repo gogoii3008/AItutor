@@ -24,6 +24,33 @@ GOOGLE_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyA5JvmQ1PbN5KGWMsuvpjf75
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-pro")
 
+@app.route("/whatsapp", methods=["POST"])
+def whatsapp_reply():
+    incoming_msg = request.form.get("Body", "")
+    sender_lang = "english"  # You can extract from metadata or use default
+    from_number = request.form.get("From")
+
+    # Generate response using Gemini
+    if incoming_msg:
+        prompt = f"Explain this clearly to a student: {incoming_msg}"
+        response = model.generate_content(prompt)
+        answer = response.text.strip()
+    else:
+        answer = "Please send a valid question."
+
+    # Optional: generate voice response
+    tts_lang = 'en'
+    filename = f"static/whatsapp_{uuid.uuid4().hex}.mp3"
+    gTTS(text=answer, lang=tts_lang).save(filename)
+
+    # Create reply
+    resp = MessagingResponse()
+    msg = resp.message()
+    msg.body(answer)
+    # msg.media(f"https://your-domain.com/{filename}")  # Optional: send audio back
+
+    return str(resp)
+
 # -------------------------------------
 # 📄 Step 3: Serve index.html
 # -------------------------------------
